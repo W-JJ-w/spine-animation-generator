@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spine动画段代码转换器 - 分享链接</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .link-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 10px;
+        }
+
+        .link-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .features {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .feature-item::before {
+            content: '✅';
+            margin-right: 10px;
+        }
+
+        .author {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #888;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .copy-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🎬</div>
+        <h1>Spine动画段代码转换器</h1>
+        <p class="description">
+            快速生成Spine动画项目文件的专业工具<br>
+            根据输入名称生成对应的动画段JSON文件，支持导入Spine中使用
+        </p>
+        
+        <a href="spine_animation_generator.html" class="link-button">
+            🚀 打开转换器
+        </a>
+        
+        <div class="features">
+            <div class="feature-item">支持批量动画段名称输入</div>
+            <div class="feature-item">生成标准Spine JSON格式</div>
+            <div class="feature-item">兼容Spine 4.1.24+版本</div>
+            <div class="feature-item">离线使用，无需网络连接</div>
+            <div class="feature-item">跨平台兼容，支持所有现代浏览器</div>
+        </div>
+        
+        <div class="copy-info">
+            <strong>📋 使用说明：</strong><br>
+            1. 点击上方按钮打开转换器<br>
+            2. 输入动画段名称（每行一个）<br>
+            3. 设置项目名称<br>
+            4. 生成并下载JSON文件<br>
+            5. 在Spine中导入使用
+        </div>
+        
+        <div class="author">
+            <img src="avatar.png" width="20" height="20" style="image-rendering: pixelated;" alt="作者头像" onerror="this.style.display='none'"/>
+            <span>作者：@W-JJ-w</span>
+        </div>
+    </div>
+</body>
+</html>

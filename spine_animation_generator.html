@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spine动画段代码转换器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .input-section, .output-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: #4facfe;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        textarea, input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .preview-area {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .animation-list {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .animation-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: #f1f5f9;
+            border-radius: 5px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Spine动画段代码转换器</h1>
+            <p>根据输入名称可生成对应的动画段json文件，支持导入spine中使用</p>
+            <div style="margin-top: 15px; font-size: 0.9em; opacity: 0.8; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <img src="avatar.png" width="20" height="20" style="image-rendering: pixelated;" alt="作者头像"/>
+                <span>作者：@W-JJ-w</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">📝 输入设置</h2>
+                
+                <div class="form-group">
+                    <label for="animationNames">动画段名称列表：</label>
+                    <textarea id="animationNames" placeholder="请输入动画段名称，每行一个：&#10;track1_dumplings_highlight&#10;track1_dumplings_highlight_loop&#10;track1_dumplings_cancel&#10;track1_dumplings_cancel_loop"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="projectName">项目名称：</label>
+                    <input type="text" id="projectName" placeholder="输入Spine项目名称" value="MySpineProject">
+                </div>
+
+
+
+                <div class="form-group">
+                    <label>输出格式：</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="outputSpineJson" checked>
+                            <label for="outputSpineJson">Spine JSON格式 (.json) 🎯</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="outputReadme">
+                            <label for="outputReadme">使用说明文档 (.txt) 📋</label>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; padding: 10px; background: #e8f5e8; border-radius: 5px; font-size: 12px; color: #2e7d32;">
+                        📋 <strong>格式说明：</strong><br>
+                        • <strong>.json</strong> - 标准JSON格式，便于调试和修改，符合Spine官方标准
+                    </div>
+                        <div style="margin-top: 8px; padding: 8px; background: #e3f2fd; border-radius: 5px; font-size: 11px; color: #1565c0;">
+                            📝 <strong>格式说明：</strong>已恢复到第一版本的简单JSON格式，兼容性更好
+                        </div>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn" onclick="generateFiles()">🚀 生成文件</button>
+                    <button class="btn btn-secondary" onclick="previewStructure()">👁️ 预览结构</button>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <h2 class="section-title">📋 输出预览</h2>
+                
+                <div id="status" class="status"></div>
+                
+                <div class="form-group">
+                    <label>检测到的动画段：</label>
+                    <div id="animationList" class="animation-list">
+                        <div style="text-align: center; color: #999; padding: 20px;">请先输入动画段名称</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>文件预览：</label>
+                    <div id="preview" class="preview-area">等待生成...</div>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn" id="downloadSpineJson" onclick="downloadFile('spineJson')" style="display:none;">📥 下载 JSON 格式</button>
+                    <button class="btn btn-secondary" id="downloadReadme" onclick="downloadFile('readme')" style="display:none;">📥 下载 TXT 格式</button>
+                    <button class="btn" id="downloadAll" onclick="downloadAllFiles()" style="display:none; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">📦 打包下载全部</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let generatedFiles = {};
+
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+
+        function parseAnimationNames() {
+            const input = document.getElementById('animationNames').value.trim();
+            if (!input) return [];
+            
+            return input.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+        }
+
+        function updateAnimationList() {
+            const animations = parseAnimationNames();
+            const listContainer = document.getElementById('animationList');
+            
+            if (animations.length === 0) {
+                listContainer.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">请先输入动画段名称</div>';
+                return;
+            }
+            
+            listContainer.innerHTML = animations
+                .map(name => `<div class="animation-item">${name}</div>`)
+                .join('');
+        }
+
+        function createSpineTemplate(projectName, animations) {
+            return {
+                skeleton: {
+                    hash: generateHash(),
+                    spine: "4.1.24",
+                    width: 1024,
+                    height: 1024
+                },
+                bones: [
+                    { name: "root" }
+                ],
+                slots: [
+                    { name: "default", bone: "root", attachment: "default" }
+                ],
+                skins: {
+                    default: {
+                        default: {
+                            default: {
+                                x: 0,
+                                y: 0,
+                                width: 100,
+                                height: 100
+                            }
+                        }
+                    }
+                },
+                animations: animations.reduce((acc, name) => {
+                    acc[name] = {
+                        bones: {
+                            root: {
+                                rotate: [
+                                    { time: 0, angle: 0 },
+                                    { time: 1, angle: 360 }
+                                ]
+                            }
+                        }
+                    };
+                    return acc;
+                }, {})
+            };
+        }
+
+        function generateHash() {
+            return Math.random().toString(36).substring(2, 10);
+        }
+
+        function previewStructure() {
+            const animations = parseAnimationNames();
+            if (animations.length === 0) {
+                showStatus('请先输入动画段名称', 'error');
+                return;
+            }
+
+            updateAnimationList();
+            
+            const projectName = document.getElementById('projectName').value || 'MySpineProject';
+            const spineData = createSpineTemplate(projectName, animations);
+            
+            document.getElementById('preview').textContent = JSON.stringify(spineData, null, 2);
+            showStatus(`预览完成，检测到 ${animations.length} 个动画段`);
+        }
+
+
+
+
+
+        function createReadmeTemplate(projectName, animations) {
+             return `Spine动画项目使用说明
+ ========================
+ 
+ 📋 项目信息
+ 项目名称: ${projectName}
+ 生成时间: ${new Date().toLocaleString()}
+ 动画段数量: ${animations.length}
+ Spine版本: 4.1.24+
+ 
+ 🎬 动画段列表
+ ${animations.map((name, index) => `${index + 1}. ${name}`).join('\n')}
+ 
+ 📂 文件格式说明
+ 
+ - ${projectName}.json: Spine JSON格式（标准导出格式）
+   ✅ 人类可读的文本格式
+   ✅ 便于调试和修改
+   ✅ 支持版本控制
+   ✅ 可以被Spine运行时加载
+   ✅ 符合Spine官方JSON格式标准
+ 
+ - ${projectName}_使用说明.txt: 本说明文档
+ 
+ 🚀 快速开始
+ 1. 打开Spine软件（版本4.1.24或更高）
+ 2. 导入JSON文件：选择 File -> Import Data... 导入 ${projectName}.json
+ 3. 开始编辑各个动画段的具体内容
+ 
+ ⚙️ 格式说明
+ - 使用 .json 格式，便于调试和修改
+ - 每个动画段都预设了1秒的基础动画轨道
+ - JSON格式不引用图片文件夹，导入后无需绑定images目录
+ 
+ 🔧 故障排除
+ - 确保Spine软件版本兼容（4.1.24+）
+ - 检查文件路径中是否包含中文或特殊字符
+ 
+ 📞 技术支持
+ 官方文档：http://esotericsoftware.com/spine-json-format
+ 如有其他问题，请查阅Spine官方文档。
+ `;
+        }
+
+        function generateFiles() {
+            const animations = parseAnimationNames();
+            if (animations.length === 0) {
+                showStatus('请先输入动画段名称', 'error');
+                return;
+            }
+
+            const projectName = document.getElementById('projectName').value || 'MySpineProject';
+            const outputSpineJson = document.getElementById('outputSpineJson').checked;
+            const outputReadme = document.getElementById('outputReadme').checked;
+
+            if (!outputSpineJson && !outputReadme) {
+                showStatus('请至少选择一种输出格式', 'error');
+                return;
+            }
+
+            const spineData = createSpineTemplate(projectName, animations);
+            generatedFiles = {};
+
+            if (outputSpineJson) {
+                // 创建标准Spine JSON格式（不引用图片文件夹）
+                const spineJsonData = {
+                    ...spineData
+                };
+                
+                generatedFiles.spineJson = {
+                    content: JSON.stringify(spineJsonData, null, 2),
+                    filename: `${projectName}.json`,
+                    type: 'application/json'
+                };
+                document.getElementById('downloadSpineJson').style.display = 'inline-block';
+            }
+
+
+
+            if (outputReadme) {
+                generatedFiles.readme = {
+                    content: createReadmeTemplate(projectName, animations),
+                    filename: `${projectName}_使用说明.txt`,
+                    type: 'text/plain'
+                };
+                document.getElementById('downloadReadme').style.display = 'inline-block';
+            }
+
+            // 显示打包下载按钮
+            const hasMultipleFiles = Object.keys(generatedFiles).length > 1;
+            if (hasMultipleFiles) {
+                document.getElementById('downloadAll').style.display = 'inline-block';
+            }
+
+            updateAnimationList();
+            document.getElementById('preview').textContent = JSON.stringify(spineData, null, 2);
+            
+            const fileTypes = Object.keys(generatedFiles).map(key => {
+                const file = generatedFiles[key];
+                return file.filename.split('.').pop().toUpperCase();
+            }).join(', ');
+            
+            showStatus(`文件生成成功！包含 ${animations.length} 个动画段，生成格式: ${fileTypes}`);
+        }
+
+        function downloadFile(type) {
+            if (!generatedFiles[type]) {
+                showStatus('文件未生成，请先点击生成文件', 'error');
+                return;
+            }
+
+            const file = generatedFiles[type];
+            const mimeType = file.type || 'application/octet-stream';
+            
+            const blob = new Blob([file.content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            const fileSize = file.content.length || file.content.byteLength || 0;
+            const sizeText = fileSize > 1024 ? `${(fileSize/1024).toFixed(1)}KB` : `${fileSize}B`;
+            showStatus(`✅ ${file.filename} 下载完成 (${sizeText})`);
+        }
+
+        function downloadAllFiles() {
+            if (Object.keys(generatedFiles).length === 0) {
+                showStatus('没有文件可下载，请先生成文件', 'error');
+                return;
+            }
+
+            // 依次下载所有文件
+            Object.keys(generatedFiles).forEach((type, index) => {
+                setTimeout(() => {
+                    downloadFile(type);
+                }, index * 500); // 每个文件间隔500ms下载
+            });
+            
+            showStatus(`开始下载 ${Object.keys(generatedFiles).length} 个文件...`);
+        }
+
+
+
+        // 实时更新动画列表
+        document.getElementById('animationNames').addEventListener('input', updateAnimationList);
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAnimationList();
+        });
+    </script>
+</body>
+</html>
